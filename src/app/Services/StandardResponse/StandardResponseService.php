@@ -15,9 +15,9 @@ class StandardResponseService
     }
 
     public function success(
-        string                 $message,
-        ArrayAccess|Enumerable $data = null,
-        int                    $http_status = Response::HTTP_OK,
+        string                            $message,
+        ArrayAccess|Enumerable|array|null $data = null,
+        int                               $http_status = Response::HTTP_OK,
     ): JsonResponse
     {
         return $this->response(
@@ -29,9 +29,9 @@ class StandardResponseService
     }
 
     public function failed(
-        string                 $message,
-        ArrayAccess|Enumerable $errors = null,
-        int                    $http_status = Response::HTTP_BAD_REQUEST,
+        string                            $message,
+        ArrayAccess|Enumerable|array|null $errors = null,
+        int                               $http_status = Response::HTTP_BAD_REQUEST,
     ): JsonResponse
     {
         return $this->response(
@@ -43,17 +43,18 @@ class StandardResponseService
     }
 
     public function response(
-        bool                   $status,
-        string                 $message,
-        int                    $http_status,
-        ArrayAccess|Enumerable $data = null,
-        ArrayAccess|Enumerable $errors = null,
+        bool                              $status,
+        string                            $message,
+        int                               $http_status,
+        ArrayAccess|Enumerable|array|null $data = null,
+        ArrayAccess|Enumerable|array|null $errors = null,
     ): JsonResponse
     {
-        $this->data->put('status', $status);
-        $this->data->put('message', $message);
-        $this->data->put('data', $data);
-        $this->data->put('error', $errors);
+        $this->data
+            ->put('status', $status)
+            ->put('message', $message)
+            ->put('data', $data)
+            ->put('error', $errors);
 
         return response()->json(
             $this->data,

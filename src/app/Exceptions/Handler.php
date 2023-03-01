@@ -42,7 +42,38 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
+
         });
+    }
+
+    public function render($request, Throwable $e)
+    {
+        return response()->failed(
+            $e->getMessage(),
+            $this->errors($e),
+            $this->code($e),
+        );
+    }
+
+    private function code(Throwable $e): int
+    {
+        return match (true) {
+            ($e->getCode() < 100 || $e->getCode() >= 600) => 500,
+            default => $e->getCode(),
+        };
+    }
+
+    private function errors($e): array
+    {
+        $errors = [];
+
+        if (app()->hasDebugModeEnabled()) {
+            $errors['debug'] = [
+                'file' => $e->getFile() . ':' . $e->getLine(),
+                'trace' => $e->getTrace(),
+            ];
+        }
+
+        return $errors;
     }
 }
