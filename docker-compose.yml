@@ -1,0 +1,100 @@
+version: '3.9'
+
+services:
+
+  wallet-db:
+    container_name: wallet_db
+    image: mysql:latest
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PORT=${DB_PORT}
+    networks:
+      wallet-network:
+    volumes:
+      - ./data/db/mysql:/var/lib/mysql
+      - ./data/db/conf.d:/etc/mysql/conf.d
+      - ./data/db/logs:/logs:ro
+      - ./data/db/mysql_lib:/var/lib/mysql
+    restart: always
+
+  wallet-service-master:
+    container_name: wallet_service_master
+    depends_on:
+      - wallet-db
+    build:
+      args:
+        user: ${WALLET_SERVICE_USER}
+        uid: ${WALLET_SERVICE_ID}
+      dockerfile: ./data/docker/DockerFile
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      wallet-network:
+    volumes:
+      - ./src:/var/www/wallet-service
+    restart: always
+
+  wallet-service-ha-worker-1:
+    container_name: wallet_service_ha_worker_1
+    depends_on:
+      - wallet-db
+    build:
+      args:
+        user: ${WALLET_SERVICE_USER}
+        uid: ${WALLET_SERVICE_ID}
+      dockerfile: ./data/docker/DockerFile
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      wallet-network:
+    volumes:
+      - ./src:/var/www/wallet-service
+    restart: always
+
+  wallet-service-ha-worker-2:
+    container_name: wallet_service_ha_worker_2
+    depends_on:
+      - wallet-db
+    build:
+      args:
+        user: ${WALLET_SERVICE_USER}
+        uid: ${WALLET_SERVICE_ID}
+      dockerfile: ./data/docker/DockerFile
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      wallet-network:
+    volumes:
+      - ./src:/var/www/wallet-service
+    restart: always
+
+  wallet-nginx:
+    container_name: wallet_nginx
+    depends_on:
+      - wallet-service-master
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    networks:
+      wallet-network:
+    volumes:
+      - ./data/nginx/config:/etc/nginx/conf.d
+    restart: always
+
+networks:
+  wallet-network:
