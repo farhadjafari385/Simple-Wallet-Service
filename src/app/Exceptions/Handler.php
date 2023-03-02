@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Contracts\BaseException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -48,32 +49,56 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
-        return response()->failed(
-            $e->getMessage(),
+        return failed(
+            $this->message($e),
             $this->errors($e),
             $this->code($e),
         );
     }
 
+    private function message(Throwable $e): string
+    {
+        $message = 'Something went wrong.';
+
+        if ($e instanceof \Exception) {
+            $message = $e->getMessage();
+        }
+        else if (app()->hasDebugModeEnabled()) {
+            $message = $e->getMessage();
+        }
+
+        return $message;
+    }
+
     private function code(Throwable $e): int
     {
+        $code = (int)$e->getCode();
+
         return match (true) {
-            ($e->getCode() < 100 || $e->getCode() >= 600) => 500,
-            default => $e->getCode(),
+            ($code < 100 || $code >= 600) => 500,
+            default => $code,
         };
     }
 
     private function errors($e): array
     {
-        $errors = [];
+        $errors = collect();
 
-        if (app()->hasDebugModeEnabled()) {
-            $errors['debug'] = [
-                'file' => $e->getFile() . ':' . $e->getLine(),
-                'trace' => $e->getTrace(),
-            ];
+        if ($e instanceof BaseException) {
+            $errors->push(
+                $e->errors()
+            );
         }
 
-        return $errors;
+        if (app()->hasDebugModeEnabled()) {
+            $errors = $errors->merge([
+                'debug' => [
+                    'file' => $e->getFile() . ':' . $e->getLine(),
+                    'trace' => $e->getTrace(),
+                ]
+            ]);
+        }
+
+        return $errors->toArray();
     }
 }

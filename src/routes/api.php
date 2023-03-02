@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\V1\TransactionController;
+use App\Http\Controllers\V1\WalletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/user', function (Request $request) {
-    return \App\Models\User::query()->get();
+Route::get('/get-balance/{user}', [WalletController::class, 'getBalance'])->missing(function (Request $request) {
+    return response()->failed(
+        'User Not Found!'
+    );
+});
+Route::put('/add-money', [TransactionController::class, 'addMoney'])->missing(function (Request $request) {
+    return response()->failed(
+        'User Not Found!'
+    );
+});
+
+Route::get('/transactions/{user}', [TransactionController::class, 'index'])->missing(function (Request $request) {
+    return response()->failed(
+        'User Not Found!'
+    );
 });

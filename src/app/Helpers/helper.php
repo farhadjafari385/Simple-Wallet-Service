@@ -1,54 +1,35 @@
 <?php
 
-namespace App\Services\StandardResponse;
-
-use App\Services\StandardResponse\Contracts\StandardResponseServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Enumerable;
 use Symfony\Component\HttpFoundation\Response;
-use ArrayAccess;
 
-/**
- * Standard Response Service
- */
-class StandardResponseService extends StandardResponseServiceContract
-{
-    /**
-     *
-     * @inheritDoc
-     *
-     */
-    public function success(
+if (!function_exists('success')) {
+    function success(
         string                            $message,
         ArrayAccess|Enumerable|array|null $data = null,
         int                               $http_status = Response::HTTP_OK,
     ): JsonResponse
     {
-        return $this->response(
-            true,
+        return response()->success(
             $message,
-            $http_status,
             $data,
+            $http_status
         );
     }
+}
 
-    /**
-     *
-     * @inheritDoc
-     *
-     */
-    public function failed(
+if (!function_exists('failed')) {
+    function failed(
         string                            $message,
         ArrayAccess|Enumerable|array|null $errors = null,
         int                               $http_status = Response::HTTP_BAD_REQUEST,
     ): JsonResponse
     {
-        return $this->response(
-            false,
+        return response()->failed(
             $message,
-            $http_status,
-            errors: $errors,
+            $errors,
+            $http_status
         );
     }
-
 }

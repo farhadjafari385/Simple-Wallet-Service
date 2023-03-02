@@ -5,6 +5,7 @@ namespace App\Services\StandardResponse\Provider;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Support\ServiceProvider;
 use App\Services\StandardResponse\StandardResponseService;
+use Symfony\Component\HttpFoundation\Response;
 
 class StandardResponseServiceProvider extends ServiceProvider
 {
@@ -22,11 +23,30 @@ class StandardResponseServiceProvider extends ServiceProvider
 
     public function boot(ResponseFactory $response): void
     {
-        $response->macro('success', function (mixed ...$value) {
-            return resolve(StandardResponseService::class)->sucess($value);
+        $response->macro('success', function (
+            $message,
+            $data = null,
+            $http_status = Response::HTTP_OK,
+        ) {
+            return resolve(StandardResponseService::class)
+                ->success(
+                    $message,
+                    $data,
+                    $http_status
+                );
         });
-        $response->macro('failed', function (mixed ...$value) {
-            return resolve(StandardResponseService::class)->failed(...$value);
+
+        $response->macro('failed', function (
+            $message,
+            $errors = null,
+            $http_status = Response::HTTP_BAD_REQUEST
+        ) {
+            return resolve(StandardResponseService::class)
+                ->failed(
+                    $message,
+                    $errors,
+                    $http_status
+                );
         });
     }
 }

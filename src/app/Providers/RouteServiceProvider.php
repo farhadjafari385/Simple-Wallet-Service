@@ -29,8 +29,8 @@ class RouteServiceProvider extends ServiceProvider
 
         Route::fallback(function () {
             return response()->failed(
-              'Route not found!',
-              http_status: Response::HTTP_NOT_FOUND,
+                'Route not found!',
+                http_status: Response::HTTP_NOT_FOUND,
             );
         });
 
