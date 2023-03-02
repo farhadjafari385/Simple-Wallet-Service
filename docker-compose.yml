@@ -21,80 +21,77 @@ services:
     restart: always
 
   wallet-service-master:
+    image: roomvu/wallet-service
     container_name: wallet_service_master
-    depends_on:
-      - wallet-db
     build:
       args:
         user: ${WALLET_SERVICE_USER}
         uid: ${WALLET_SERVICE_ID}
+        app_name: ${APP_NAME}
+        app_key: ${APP_KEY}
+        db_host: ${DB_HOST}
+        db_port: ${DB_PORT}
+        db_database: ${DB_DATABASE}
+        db_username: ${DB_USERNAME}
+        db_password: ${DB_PASSWORD}
+        queue_connection: ${QUEUE_CONNECTION}
+        redis_host: ${REDIS_HOST}
+        redis_password: ${REDIS_PASSWORD}
+        redis_port: ${REDIS_PORT}
       dockerfile: ./data/docker/DockerFile
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - wallet-db
     networks:
       wallet-network:
     volumes:
-      - ./src:/var/www/wallet-service
+      - ./src:/var/www/wallet-service/
     restart: always
 
   wallet-service-ha-worker-1:
+    image: roomvu/wallet-service
     container_name: wallet_service_ha_worker_1
     depends_on:
       - wallet-db
-    build:
-      args:
-        user: ${WALLET_SERVICE_USER}
-        uid: ${WALLET_SERVICE_ID}
-      dockerfile: ./data/docker/DockerFile
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
     networks:
       wallet-network:
     volumes:
-      - ./src:/var/www/wallet-service
+      - ./src:/var/www/wallet-service/
     restart: always
 
   wallet-service-ha-worker-2:
+    image: roomvu/wallet-service
     container_name: wallet_service_ha_worker_2
     depends_on:
       - wallet-db
-    build:
-      args:
-        user: ${WALLET_SERVICE_USER}
-        uid: ${WALLET_SERVICE_ID}
-      dockerfile: ./data/docker/DockerFile
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
     networks:
       wallet-network:
     volumes:
-      - ./src:/var/www/wallet-service
+      - ./src:/var/www/wallet-service/
     restart: always
 
   wallet-nginx:
-    container_name: wallet_nginx
-    depends_on:
-      - wallet-service-master
     image: nginx:latest
+    container_name: wallet_nginx
     ports:
       - "8080:80"
+    depends_on:
+      - wallet-service-master
     networks:
       wallet-network:
     volumes:
       - ./data/nginx/config:/etc/nginx/conf.d
     restart: always
 
+  wallet-redis:
+    image: redis:latest
+    container_name: wallet_redis
+    networks:
+      wallet-network:
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
 networks:
   wallet-network:
+
+volumes:
+  wallet-data:

@@ -2,6 +2,15 @@ FROM php:8.2.3-fpm
 
 ARG user
 ARG uid
+ARG app_name
+ARG app_key
+ARG db_host
+ARG db_port
+ARG db_database
+ARG db_username
+ARG db_password
+
+VOLUME wallet-data /var/www/wallet-service/
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -22,22 +31,35 @@ RUN useradd -G www-data,root -u $uid -d /home/$user $user
 RUN mkdir -p /home/$user/.composer && \
     chown -R $user:$user /home/$user
 
-WORKDIR /var/www/wallet-service
-
-COPY ./src /var/www/wallet-service
+COPY ./src /var/www/wallet-service/
 COPY ./src/.env.example /var/www/wallet-service/.env
-
-RUN composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
-
-RUN php artisan optimize:clear && \
-    php artisan config:cache && \
-    php artisan route:cache
 
 RUN chmod 777 -R /var/www/wallet-service/storage/ && \
     chown -R www-data:www-data /var/www/wallet-service
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+WORKDIR /var/www/wallet-service
+
+ENV APP_NAME=${app_name}
+ENV APP_KEY=${app_key}
+ENV DB_HOST=${db_host}
+ENV DB_PORT=${db_port}
+ENV DB_DATABASE=${db_database}
+ENV DB_USERNAME=${db_username}
+ENV DB_PASSWORD=${db_password}
+ENV QUEUE_CONNECTION=${queue_connection}
+ENV REDIS_HOST=${redis_host}
+ENV REDIS_PASSWORD=${redis_password}
+ENV REDIS_PORT=${redis_port}
+
+RUN composer install --prefer-dist --no-interaction && \
+    php artisan optimize:clear && \
+    php artisan config:cache && \
+    php artisan route:cache
+
 USER $user
 
-CMD php artisan serve --port=8000 --host=0.0.0.0
+ENTRYPOINT php artisan serve --port=8000 --host=0.0.0.0
 
 EXPOSE 8000

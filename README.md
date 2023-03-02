@@ -1,8 +1,8 @@
 ## Wallet Service Guide
 
-### Build:
+### Build Image:
 
-Build our docker file for making our project ready to use.
+Build our docker file image for making our project ready to use.
 
 ```shell
 docker compose build
@@ -25,6 +25,13 @@ docker compose exec wallet-service-master php artisan migrate --seed
 ```
 
 
+### Fresh Database:
+
+```shell
+docker compose exec wallet-service-master php artisan migrate:fresh --seed
+```
+
+
 ### Refresh Database:
 
 ```shell
@@ -43,5 +50,12 @@ docker compose restart
 
 ```shell
 docker compose {service_name} restart
+```
+
+
+### Execute Command on Service:
+
+```shell
+docker compose run {service_name} bash
 ```
 
