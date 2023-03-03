@@ -30,7 +30,10 @@ class TransactionController extends Controller
      */
     public function addMoney(TransactionAddMoneyRequest $request): \Illuminate\Http\JsonResponse
     {
-        $transaction = $this->wallet_charge_service->addMoney($request->user_id, $request->amount);
+        $transaction = $this->wallet_charge_service->addMoney(
+            $request->user_id,
+            $request->amount
+        );
 
         return success('OK', new TransactionAddMoneyResource($transaction));
     }

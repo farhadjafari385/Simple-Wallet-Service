@@ -18,14 +18,6 @@ abstract class WalletChargeServiceContract implements WalletChargeServiceInterfa
         $this->wallet_repository = new WalletRepository();
     }
 
-    protected function getProcess($amount): TransactionProcessEnum
-    {
-        return match (true) {
-            ($amount >= 0) => TransactionProcessEnum::ADD,
-            ($amount < 0) => TransactionProcessEnum::DEDUCT,
-        };
-    }
-
     protected function user($user_id): \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Builder|array|null
     {
         return User::query()->findOrFail($user_id);

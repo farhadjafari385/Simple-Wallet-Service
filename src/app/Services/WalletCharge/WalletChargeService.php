@@ -46,7 +46,6 @@ class WalletChargeService extends WalletChargeServiceContract
         $transaction = $this->transactions_repository->transaction(
             $user,
             $amount,
-            $this->getProcess($amount)
         );
 
         DB::commit();

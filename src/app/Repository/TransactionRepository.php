@@ -20,7 +20,7 @@ class TransactionRepository
         return Transaction::query()->count('amount');
     }
 
-    public function transaction(User|Model $user, float $amount, TransactionProcessEnum $process): Model
+    public function transaction(User|Model $user, float $amount): Model
     {
         $latest = $user->transactions()->orderByDesc('id')->firstOrNew();
 
@@ -28,12 +28,20 @@ class TransactionRepository
             'hash' => $this->generateHash($latest),
             'amount' => $amount,
             'current_balance' => $user->wallet->balance,
-            'process' => $process,
+            'process' => $this->getProcess($amount),
         ]);
     }
 
     private function generateHash(Transaction $latest): string
     {
         return Hash::make($latest->hash . ':' . $latest->user_id . ':' . $latest->amount . ':' . $latest->current_balance);
+    }
+
+    private function getProcess($amount): TransactionProcessEnum
+    {
+        return match (true) {
+            ($amount >= 0) => TransactionProcessEnum::ADD,
+            ($amount < 0) => TransactionProcessEnum::DEDUCT,
+        };
     }
 }

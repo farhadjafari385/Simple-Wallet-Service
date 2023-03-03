@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use App\Exceptions\Contracts\BaseException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -73,6 +74,10 @@ class Handler extends ExceptionHandler
     private function code(Throwable $e): int
     {
         $code = (int)$e->getCode();
+
+        if ($e instanceof ValidationException) {
+            $code = 422;
+        }
 
         return match (true) {
             ($code < 100 || $code >= 600) => 500,

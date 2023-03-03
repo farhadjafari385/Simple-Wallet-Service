@@ -16,12 +16,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::put('/add-money', [TransactionController::class, 'addMoney']);
+
 Route::get('/get-balance/{user}', [WalletController::class, 'getBalance'])->missing(function (Request $request) {
-    return response()->failed(
-        'User Not Found!'
-    );
-});
-Route::put('/add-money', [TransactionController::class, 'addMoney'])->missing(function (Request $request) {
     return response()->failed(
         'User Not Found!'
     );
